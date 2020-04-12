@@ -3,8 +3,33 @@ import sys
 from PySide2.QtWidgets import QApplication, QLabel, QPushButton, QVBoxLayout, QWidget, QSlider, QHBoxLayout, QSizePolicy
 from PySide2.QtCore import Slot, Qt
 from PySide2.QtGui import QPalette
+import serial
+import serial.tools.list_ports
 
 from packetlib import Packet
+
+class Model:
+    def __init__(self):
+        self.packet = Packet('packet.yaml')
+        self.open_serial_port('/dev/ttyUSB0', 115200)
+        self.serial.write(b'a')
+    def open_serial_port(self, port, baudrate):
+        self.serial = serial.Serial(port, baudrate)
+        if self.serial.is_open:
+            print(f'{port} already opened, closing')
+            self.serial.close()
+        self.serial.open()
+        print(f'{port} opened')
+    def get_serial_ports(self):
+        return serial.tools.list_ports.comports()
+    def setData(self, name, value):
+        setattr(self.packet, name, value)
+    def sendData(self):
+        self.serial.write(self.packet.stream)
+        return None
+        for i in self.packet.stream:
+            print(f"send: 0x{i:X}")
+        print()
 
 class MyWidget(QWidget):
     def __init__(self):
@@ -14,19 +39,18 @@ class MyWidget(QWidget):
         self.layout.addWidget(SliderGroup())
         self.layout.addWidget(self.button)
         self.setLayout(self.layout)
-
         # Connecting the signal
         self.button.clicked.connect(self.magic)
-        self.packet = Packet('packet.yaml')
+        for slider in self.findChildren(Slider):
+            slider.slider.valueChanged.connect(self.magic)
+        self.model = Model()
     @Slot()
-    def magic(self):
+    def magic(self, value = None):
         for slider in self.findChildren(Slider):
             slider_name = slider.objectName()
             slider_value = slider.slider.sliderPosition()
-            setattr(self.packet, slider_name, slider_value)
-        for i in self.packet.stream:
-            print(f"send: 0x{i:X}")
-        print()
+            self.model.setData(slider_name, slider_value)
+        self.model.sendData()
 
 class SliderGroup(QWidget):
     def __init__(self):
