@@ -1,0 +1,5 @@
+packet:
+    val1:
+        width: 8
+        unsigned: True
+    val2: ~
