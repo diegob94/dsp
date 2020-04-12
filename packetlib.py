@@ -43,6 +43,8 @@ def write_header(packet_def, header_path):
 #ifndef PACKET_H
 #define PACKET_H
 
+#define PACKET_SIZE {total_bytes}
+
 typedef union Packet_u {{
     struct __attribute__((__packed__)) fields_s {{
 {fields}
