@@ -1,6 +1,8 @@
 #!/usr/bin/zsh
 
-set -v
+set -ve
+
+test -d tmp || mkdir tmp
 
 pushd tmp
 ../packetlib.py ../packet.yaml
