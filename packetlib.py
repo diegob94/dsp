@@ -40,18 +40,18 @@ def read_packet_yaml(yaml_path, debug = False):
 def write_header(packet_def, header_path):
     header_path = header_path.resolve()
     header_template = """
-    #ifndef PACKET_H
-    #define PACKET_H
+#ifndef PACKET_H
+#define PACKET_H
 
-    typedef union Packet_u {{
-        struct __attribute__((__packed__)) fields_s {{
-    {fields}
-        }} fields;
-        uint8_t stream[{total_bytes}];
-    }} Packet;
+typedef union Packet_u {{
+    struct __attribute__((__packed__)) fields_s {{
+{fields}
+    }} fields;
+    uint8_t stream[{total_bytes}];
+}} Packet;
 
-    #endif // PACKET_H
-    """.lstrip()
+#endif // PACKET_H
+    """.strip()
 
     map_width_c = {
         8: 'int8_t',
@@ -70,7 +70,7 @@ def write_header(packet_def, header_path):
         lines.append(f'{ident}{ident}{c_type} {field};')
         total_bytes += field_attrs['byte_width']
     header = header_template.format(fields = '\n'.join(lines), total_bytes =  total_bytes)
-    header_path.write_text(header)
+    header_path.write_text(header + '\n')
     print(f"Header generated: {header_path}")
 
 def get_struct_format(packet_def):
@@ -93,8 +93,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Generate packet header from YAML definition')
     parser.add_argument('yaml', type=Path, help='Packet definition in YAML format')
     args = parser.parse_args()
-    yaml_path = args.yaml
-    packet_def = read_packet_yaml(yaml_path)
-    header_path = yaml_path.with_suffix('.h')
+    packet_def = read_packet_yaml(args.yaml)
+    header_path = Path.cwd() / args.yaml.with_suffix('.h').name
     write_header(packet_def, header_path)
     #print(get_struct_format(packet_def))
